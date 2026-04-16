@@ -3,20 +3,34 @@ import api from "@/utils/api";
 import { useRouter } from "next/router";
 
 export default function Step3Review ({onPrev }: { onPrev: () => void }) {
-    const { step1, resetForm, items } = useInvoiceStore();
+    const { step1, resetForm, items, role } = useInvoiceStore();
     const router = useRouter();
-
     const total = items.reduce((acc, curr) => acc + curr.subtotal, 0);
     const handleSubmit = async () => {
         try {
-            await api.post('/invoices', {
-                ...step1,
-                items: items,
-                total_amount: total
+            const sanitizedItems = items.map((item) => {
+                if (role === 'Kerani') {
+                    return {
+                        id:  item.id,
+                        quantity: item.quantity,
+                    };
+                }
+                return {
+                    id: item.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    subtotal: item.subtotal
+                };
             });
+            const payload = {
+                ...step1,
+                items: sanitizedItems,
+                total_amount: role === 'Kerani' ? 0 : total,
+            }
+            await api.post('/invoices', payload)
             alert('Invoice berhasil disimpan!');
             resetForm();
-            router.push('/');
+            router.push('/dashboard');
         } catch (err) {
             alert('Gagal menyimpan invoice. Coba lagi.');
         }

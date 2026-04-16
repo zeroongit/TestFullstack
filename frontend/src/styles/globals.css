@@ -1,4 +1,30 @@
 @import "tailwindcss";
+@media print {
+  nav, .sidebar, .no-print, button {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0;
+    margin: 0;
+  }
+
+  .print-container {
+    width: 100%;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .kop-surat {
+    display: block !important;
+  }
+
+}
+  .kop-surat {
+    display: none;
+  }
 
 :root {
   --background: #ffffff;
