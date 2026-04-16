@@ -16,6 +16,7 @@ interface InvoiceState {
         name: string;
         quantity: number;
         price: number;
+        subtotal: number;
     }>;
     setAuth: (token: string, role: "Admin" | "Kerani") => void;
     updateStep1: (data: InvoiceState['step1']) => void;

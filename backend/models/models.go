@@ -28,6 +28,7 @@ type Invoice struct {
 type InvoiceDetail struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 	InvoiceID uuid.UUID `gorm:"type:uuid" json:"invoice_id"`
+	Name string `json:"name"`
 	ItemID uint `json:"item_id"`
 	Quantity int `json:"quantity"`
 	Price float64 `json:"price"`
