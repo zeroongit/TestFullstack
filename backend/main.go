@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 var DB *gorm.DB
-
+//setup database
 func initDatabase() {
 	var err error
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"),
@@ -41,11 +41,16 @@ func initDatabase() {
 		fmt.Println("Database Seeded scuccessfully")
 	}
 }
-
+//function main
 func main() {
 	initDatabase()
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+    AllowOrigins:     "http://localhost:3000, http://127.0.0.1:3000",
+    AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+    AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
+    AllowCredentials: true,
+	}))
 	app.Post("api/login", login)
 	app.Get("/api/items", func(c *fiber.Ctx) error {
 		code := c.Query("code")
@@ -61,7 +66,7 @@ func main() {
 
 	log.Fatal(app.Listen(":8080"))
 }
-
+// function login
 func login(c *fiber.Ctx) error {
 	type LoginInput struct {
 		Username string `json:"username"`
@@ -79,8 +84,8 @@ func login(c *fiber.Ctx) error {
 	if input.Username == "admin" && input.Password == "admin123" {
 		role = "Admin"
 		userID = 1
-	} else if input.Username == "user" && input.Password == "kirana123" {
-		role = "user"
+	} else if input.Username == "kerani" && input.Password == "kerani123" {
+		role = "Kerani"
 		userID = 2
 	} else {
 		return c.Status(401).JSON(fiber.Map{"message": "Username atau password salah"})

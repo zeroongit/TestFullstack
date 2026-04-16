@@ -1,78 +1,80 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { use, useState } from 'react';
+import { useInvoiceStore } from '@/store/useInvoiceStore';
+import { useRouter } from 'next/router';
+import api from '@/utils/api';
+import Cookies from 'js-cookie';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export default function loginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const setSAuth = useInvoiceStore((state) => state.setAuth);
+  const router = useRouter();
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  const handleLogin = async (e: React.FormEvent) =>  {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-export default function Home() {
+    try {
+      const response = await api.post('login', {
+        username,
+        password,
+      });
+
+      const { token, role } = response.data;
+      setSAuth( token, role );
+      Cookies.set('token', token, { expires: 1});
+      alert(`login berhasil sebagai ${role}`);
+      
+      router.push('/wizard');      
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Gagal terhubung ke server');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
-    >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className='flex min-h-screen items-center justify-center bg-slate-900 text-white'>
+    <div className='w-full max-w-md p-8 bg-slatte-800 rounded-xl shadow-2xl border border-slate-700'>
+      <h1 className='text-3xl font-bold mb-w text-center text-blue-400'>Fleetfy</h1>
+      <p className='text-slate-400 text-center mb-8'>Logistic& Fleet Management </p>
+      {error && (
+        <div className='bg-red-500/10 border border-red-500 text-red-500 p-3 rounded mb-4 text-sm'>
+          {error}
+        </div> 
+      )}
+
+      <form onSubmit={handleLogin} className='space-y-4'>
+        <div>
+          <label className='block text-sm font-medium mb-1'>Username</label>
+          <input
+          type="text"
+          required
+          className='w-full p-2.5 bg-slate-700 border border-slate-600 rounded focus:ring-2 focus:ring-blue-500 outlline-none transition'
+          placeholder='admin / kerani'
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}/>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div>
+          <label className='block text-sm font-medium mb-1'>Password</label>
+          <input type="password" required
+          className='w-full p-2.5 bg-slate-700 border border-slate-600 rounded focus:ring-2 focus:ring-blue-500 outline-none transition'
+          placeholder='••••••••'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}/>
         </div>
-      </main>
+        <button type='submit' disabled={isLoading} className='w-full bg-blue-600 hiver:bg-blue-700 text-white font-bold py-2.5 rounded transition duration-200 disabled:opacity-50'>
+          {isLoading ? 'Authenticating...' : 'Sign In'}
+        </button>
+      </form>
+        <div className='mt-6 text-center text-xs text-slate-500'>
+          <p>Admin: admin / admin123</p>
+          <p>Kerani: kerani / kerani123</p>
+        </div>
+      </div>
     </div>
   );
-}
+};
